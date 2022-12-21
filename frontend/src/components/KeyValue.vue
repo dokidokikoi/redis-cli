@@ -1,0 +1,224 @@
+<template>
+    <main>
+        <el-form :model="form">
+            <el-form-item label="键">
+                <el-input v-model="form.key" disabled placeholder=""/>
+            </el-form-item>
+            <el-row>
+                <el-col :span="11">
+                    <el-form-item label="过期时间">
+                        <el-input v-model.number="form.ttl" placeholder=""/>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="2"></el-col>
+                <el-col :span="11">
+                    <el-form-item label="数据类型">
+                        <el-input v-model="form.type" disabled placeholder=""/>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <div v-if="form.type === 'string'">
+                <el-form-item label="值">
+                    <el-input type="textarea" v-model="form.value" :autosize="{ minRows: 6 }" placeholder=""/>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="updateKey">更新</el-button>
+                </el-form-item>
+            </div>
+            <div v-if="form.type === 'list'">
+                <el-form-item>
+                    <el-button type="primary" @click="listDialogVisible = true">新增一行</el-button>
+                </el-form-item>
+                <el-dialog
+                    v-model="listDialogVisible"
+                    title="LIST 值新增"
+                    width="60%"
+                >
+                <el-form :model="listForm" label-width="100px">
+                    <el-form-item label="字段的值">
+                        <el-input type="textarea" :rows="6" placeholder="请输入字段的值" v-model="listForm.value" />
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="createListValue">创建</el-button>
+                        <el-button @click="listDialogVisible = false">取消</el-button>
+                    </el-form-item>
+                </el-form>
+                </el-dialog>
+                <el-table :data="form.value" stripe border style="width: 100%; margin-bottom: 20px;">
+                    <el-table-column type="index" />
+                    <el-table-column label="Value" >
+                        <template #default="scope">
+                            <div @dblclick="">{{ scope.row }}</div>
+                            <!-- <el-input v-model="scope.row.value" /> -->
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="操作">
+                        <template #default="scope">
+                            <el-popconfirm title="确认删除?" @confirm="deleteListItem(scope.row.value)">
+                                <template #reference>
+                                    <el-button link type="danger">删除</el-button>
+                                </template>
+                            </el-popconfirm>
+                        </template>
+                </el-table-column>
+                </el-table>
+                <el-form-item>
+                    <el-button type="primary" @click="updateKey">更新</el-button>
+                </el-form-item>
+            </div>
+            <div v-else-if="form.type === 'hash'">
+                <el-form-item>
+                    <el-button type="primary" @click="showHashChangeDialog('add', null)">新增一行</el-button>
+                </el-form-item>
+                <el-dialog
+                    v-model="hashDialogVisible"
+                    :title="hashDialogTitle"
+                    width="50%"
+                >
+                    <el-form :model="hashForm" label-width="100px">
+                        <el-form-item label="字段名称">
+                            <el-input placeholder="请输入字段名称" v-model="hashForm.field" />
+                        </el-form-item>
+                        <el-form-item label="字段的值">
+                            <el-input placeholder="请输入字段的值" v-model="hashForm.value" />
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="hashFiledChange">创建</el-button>
+                            <el-button @click="hashDialogVisible = false">取消</el-button>
+                        </el-form-item>
+                    </el-form>
+                </el-dialog>
+                <el-table :data="form.value" stripe border style="width: 100%">
+                    <el-table-column type="index" />
+                    <el-table-column prop="key" label="Key" />
+                    <el-table-column prop="value" label="Value" />
+                    <el-table-column label="操作">
+                        <template #default="scope">
+                        <el-button link type="primary" @click="showHashChangeDialog('edit', scope.row)">编辑</el-button>
+                        <el-popconfirm title="确认删除?" @confirm="deleteHashField([scope.row.key])">
+                            <template #reference>
+                            <el-button link type="danger">删除</el-button>
+                            </template>
+                        </el-popconfirm>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </div>
+            <div v-if="form.type === 'set'">
+                <el-form-item label="值">
+                    <el-input type="textarea" v-model="form.value" :rows="10" placeholder=""/>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="updateKey">更新</el-button>
+                </el-form-item>
+            </div>
+            <div v-if="form.type === 'zset'">
+                <el-form-item label="值">
+                    <el-input type="textarea" v-model="form.value" :rows="10" placeholder=""/>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="updateKey">更新</el-button>
+                </el-form-item>
+            </div>
+        </el-form>
+    </main>
+</template>
+
+
+<script setup>
+import { ref, watch } from 'vue';
+import { GetKeyValue, UpdateKeyValue, ListValueCreate, ListValueDelete } from '../../wailsjs/go/main/App';
+import { ElNotification } from 'element-plus'
+
+let props = defineProps(['keyDB', 'keyIdentity', 'keyKey'])
+let form = ref({})
+
+let listDialogVisible = ref(false)
+let listForm = ref({})
+let listItemChange = ref()
+
+let hashDialogVisible = ref(false)
+let hashDialogTitle = ref()
+
+watch(()=>props.keyKey, () => {
+    getTheValue()
+})
+
+function getTheValue() {
+    GetKeyValue({conn_identity: props.keyIdentity, db: props.keyDB, key: props.keyKey}).then(res => {
+        if (res.code !== 200) {
+            form.value = undefined
+            ElNotification({
+                title: res.msg,
+                type: "error"
+            })
+            return
+        }
+        form.value = res.data
+        form.value.key = props.keyKey
+    })
+}
+
+function updateKey() {
+    UpdateKeyValue({
+        conn_identity: props.keyIdentity, 
+        db: props.keyDB, 
+        key: props.keyKey, 
+        value: form.value.value, 
+        type: form.value.type,
+        ttl: form.value.ttl}).then(res => {
+        if (res.code !== 200) {
+            form.value = undefined
+            ElNotification({
+                title: res.msg,
+                type: "error"
+            })
+            return
+        }
+    })
+}
+
+function createListValue() {
+    ListValueCreate({
+        conn_identity: props.keyIdentity, 
+        db: props.keyDB, 
+        key: props.keyKey, 
+        value: listForm.value.value}).then(res => {
+        if (res.code !== 200) {
+            form.value = undefined
+            ElNotification({
+                title: res.msg,
+                type: "error"
+            })
+            return
+        }
+        listDialogVisible.value = false
+        listForm.value = {}
+        getTheValue()
+    })
+}
+
+function deleteListItem(value) {
+    ListValueDelete({
+        conn_identity: props.keyIdentity, 
+        db: props.keyDB, 
+        key: props.keyKey, 
+        value: value}).then(res => {
+        if (res.code !== 200) {
+            form.value = undefined
+            ElNotification({
+                title: res.msg,
+                type: "error"
+            })
+            return
+        }
+        getTheValue()
+    })
+}
+
+</script>
+
+
+<style scoped>
+
+</style>
