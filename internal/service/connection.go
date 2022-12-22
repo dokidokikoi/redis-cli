@@ -5,21 +5,19 @@ import (
 	"errors"
 	"os"
 	"redis-cli/internal/define"
+	"redis-cli/internal/helper"
 
 	uuid "github.com/satori/go.uuid"
 )
 
 // 连接列表
 func ConnectionList() ([]*define.Connection, error) {
-	nowPath, _ := os.Getwd()
-	data, err := os.ReadFile(nowPath + string(os.PathSeparator) + define.ConfigName)
+	conf, err := helper.GetConfig()
 	if err != nil {
 		return nil, err
 	}
-	conf := new(define.Config)
-	err = json.Unmarshal(data, conf)
-	if err != nil {
-		return nil, err
+	if conf == nil {
+		return nil, nil
 	}
 
 	return conf.Connections, nil
@@ -37,20 +35,7 @@ func ConnectionCreate(conn *define.Connection) error {
 	}
 
 	conn.Identity = uuid.NewV4().String()
-	conf := new(define.Config)
-	nowPath, _ := os.Getwd()
-	data, err := os.ReadFile(nowPath + string(os.PathSeparator) + define.ConfigName)
-	if errors.Is(err, os.ErrNotExist) {
-		os.MkdirAll(nowPath, 0666)
-	} else if err != nil {
-		return err
-	} else {
-		json.Unmarshal(data, conf)
-	}
-	conf.Connections = append(conf.Connections, conn)
-	data, _ = json.Marshal(conf)
-	os.WriteFile(nowPath+string(os.PathSeparator)+define.ConfigName, data, 0666)
-	return nil
+	return helper.SaveConfig(conn)
 }
 
 func ConnectionEdit(conn *define.Connection) error {
@@ -68,8 +53,7 @@ func ConnectionEdit(conn *define.Connection) error {
 	}
 
 	conf := new(define.Config)
-	nowPath, _ := os.Getwd()
-	data, err := os.ReadFile(nowPath + string(os.PathSeparator) + define.ConfigName)
+	data, err := os.ReadFile(helper.GetConfigPath() + define.ConfigName)
 	if err != nil {
 		return err
 	}
@@ -81,7 +65,7 @@ func ConnectionEdit(conn *define.Connection) error {
 		}
 	}
 	data, _ = json.Marshal(conf)
-	os.WriteFile(nowPath+string(os.PathSeparator)+define.ConfigName, data, 0666)
+	os.WriteFile(helper.GetConfigPath()+define.ConfigName, data, 0666)
 	return nil
 }
 

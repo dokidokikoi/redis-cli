@@ -61,6 +61,7 @@ function createConnection() {
         })
         // 重新获取连接列表
         emits('emit-connection-list')
+        dialogVisible.value = false
     })
 }
 
@@ -79,6 +80,7 @@ function editConnection() {
         })
         // 重新获取连接列表
         emits('emit-connection-list')
+        dialogVisible.value = false
     })
 }
 </script>
