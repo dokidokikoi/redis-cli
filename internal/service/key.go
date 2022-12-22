@@ -128,20 +128,13 @@ func UpdateKeyValue(req *define.UpdateKeyValueRequest) error {
 	case "string":
 		err = rdb.Set(context.Background(), req.Key, req.Value, req.TTL*time.Second).Err()
 	case "hash":
-		err = rdb.HSet(context.Background(), req.Key, req.Value, req.TTL*time.Second).Err()
+		HashUpdate(rdb, req)
 	case "list":
-		err = rdb.RPush(context.Background(), req.Key, req.Value).Err()
-		rdb.Expire(context.Background(), req.Key, req.TTL*time.Second)
+		ListUpdate(rdb, req)
 	case "set":
-		err = rdb.SAdd(context.Background(), req.Key, req.Value).Err()
-		rdb.Expire(context.Background(), req.Key, req.TTL*time.Second)
+		SetUpdate(rdb, req)
 	case "zset":
-		members, ok := req.Value.([]redis.Z)
-		if !ok {
-			return errors.New("参数错误")
-		}
-		err = rdb.ZAdd(context.Background(), req.Key, members...).Err()
-		rdb.Expire(context.Background(), req.Key, req.TTL*time.Second)
+		ZsetUpdate(rdb, req)
 	}
 
 	return err

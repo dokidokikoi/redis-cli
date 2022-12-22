@@ -40,6 +40,46 @@ export namespace define {
 	        this.type = source["type"];
 	    }
 	}
+	export class HashAddOrUpdateFieldRequest {
+	    conn_identity: string;
+	    db: number;
+	    key: string;
+	    field: string;
+	    value: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new HashAddOrUpdateFieldRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.conn_identity = source["conn_identity"];
+	        this.db = source["db"];
+	        this.key = source["key"];
+	        this.field = source["field"];
+	        this.value = source["value"];
+	    }
+	}
+	export class HashFieldDeleteRequest {
+	    conn_identity: string;
+	    db: number;
+	    key: string;
+	    field: string[];
+	    value: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new HashFieldDeleteRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.conn_identity = source["conn_identity"];
+	        this.db = source["db"];
+	        this.key = source["key"];
+	        this.field = source["field"];
+	        this.value = source["value"];
+	    }
+	}
 	export class KeyListRequest {
 	    conn_identity: string;
 	    db: number;
@@ -90,6 +130,24 @@ export namespace define {
 	        this.value = source["value"];
 	    }
 	}
+	export class SetValueRequest {
+	    conn_identity: string;
+	    db: number;
+	    key: string;
+	    value: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new SetValueRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.conn_identity = source["conn_identity"];
+	        this.db = source["db"];
+	        this.key = source["key"];
+	        this.value = source["value"];
+	    }
+	}
 	export class UpdateKeyValueRequest {
 	    conn_identity: string;
 	    db: number;
@@ -110,6 +168,26 @@ export namespace define {
 	        this.type = source["type"];
 	        this.ttl = source["ttl"];
 	        this.value = source["value"];
+	    }
+	}
+	export class ZSetValueRequest {
+	    conn_identity: string;
+	    db: number;
+	    key: string;
+	    score: number;
+	    member: any;
+	
+	    static createFrom(source: any = {}) {
+	        return new ZSetValueRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.conn_identity = source["conn_identity"];
+	        this.db = source["db"];
+	        this.key = source["key"];
+	        this.score = source["score"];
+	        this.member = source["member"];
 	    }
 	}
 

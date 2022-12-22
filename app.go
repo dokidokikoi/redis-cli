@@ -231,3 +231,123 @@ func (a *App) ListValueCreate(req *define.ListValueRequest) H {
 		"msg":  "新增成功",
 	}
 }
+
+func (a *App) HashAddOrUpdateField(req *define.HashAddOrUpdateFieldRequest) H {
+	if req.ConnIdentity == "" || req.Key == "" || req.Field == "" || req.Value == "" {
+		return M{
+			"code": -1,
+			"msg":  "必填参不能为空",
+		}
+	}
+	err := service.HashAddOrUpdateField(req)
+	if err != nil {
+		return M{
+			"code": -1,
+			"msg":  fmt.Sprintf("ERROR: %s", err.Error()),
+		}
+	}
+	return M{
+		"code": 200,
+		"msg":  "更新修改成功",
+	}
+}
+
+func (a *App) HashFieldDelete(req *define.HashFieldDeleteRequest) H {
+	if req.ConnIdentity == "" || req.Key == "" || req.Fields == nil {
+		return M{
+			"code": -1,
+			"msg":  "必填参不能为空",
+		}
+	}
+	err := service.HashFieldDelete(req)
+	if err != nil {
+		return M{
+			"code": -1,
+			"msg":  fmt.Sprintf("ERROR: %s", err.Error()),
+		}
+	}
+	return M{
+		"code": 200,
+		"msg":  "删除成功",
+	}
+}
+
+func (a *App) SetValueDelete(req *define.SetValueRequest) H {
+	if req.ConnIdentity == "" || req.Key == "" || req.Value == "" {
+		return M{
+			"code": -1,
+			"msg":  "必填参不能为空",
+		}
+	}
+	err := service.SetValueDelete(req)
+	if err != nil {
+		return M{
+			"code": -1,
+			"msg":  fmt.Sprintf("ERROR: %s", err.Error()),
+		}
+	}
+	return M{
+		"code": 200,
+		"msg":  "删除成功",
+	}
+}
+
+func (a *App) SetValueCreate(req *define.SetValueRequest) H {
+	if req.ConnIdentity == "" || req.Key == "" || req.Value == "" {
+		return M{
+			"code": -1,
+			"msg":  "必填参不能为空",
+		}
+	}
+	err := service.SetValueCreate(req)
+	if err != nil {
+		return M{
+			"code": -1,
+			"msg":  fmt.Sprintf("ERROR: %s", err.Error()),
+		}
+	}
+	return M{
+		"code": 200,
+		"msg":  "新增成功",
+	}
+}
+
+func (a *App) ZSetValueDelete(req *define.ZSetValueRequest) H {
+	if req.ConnIdentity == "" || req.Key == "" || req.Member == nil {
+		return M{
+			"code": -1,
+			"msg":  "必填参不能为空",
+		}
+	}
+	err := service.ZSetValueDelete(req)
+	if err != nil {
+		return M{
+			"code": -1,
+			"msg":  fmt.Sprintf("ERROR: %s", err.Error()),
+		}
+	}
+	return M{
+		"code": 200,
+		"msg":  "删除成功",
+	}
+}
+
+func (a *App) ZSetValueCreate(req *define.ZSetValueRequest) H {
+	if req.ConnIdentity == "" || req.Key == "" || req.Member == nil {
+		return M{
+			"code": -1,
+			"msg":  "必填参不能为空",
+		}
+	}
+	err := service.ZSetValueCreate(req)
+	if err != nil {
+		return M{
+			"code": -1,
+			"msg":  fmt.Sprintf("ERROR: %s", err.Error()),
+		}
+	}
+	return M{
+		"code": 200,
+		"msg":  "新增成功",
+	}
+}

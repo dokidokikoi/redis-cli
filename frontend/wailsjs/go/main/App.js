@@ -34,6 +34,14 @@ export function GetKeyValue(arg1) {
   return window['go']['main']['App']['GetKeyValue'](arg1);
 }
 
+export function HashAddOrUpdateField(arg1) {
+  return window['go']['main']['App']['HashAddOrUpdateField'](arg1);
+}
+
+export function HashFieldDelete(arg1) {
+  return window['go']['main']['App']['HashFieldDelete'](arg1);
+}
+
 export function KeyList(arg1) {
   return window['go']['main']['App']['KeyList'](arg1);
 }
@@ -46,6 +54,22 @@ export function ListValueDelete(arg1) {
   return window['go']['main']['App']['ListValueDelete'](arg1);
 }
 
+export function SetValueCreate(arg1) {
+  return window['go']['main']['App']['SetValueCreate'](arg1);
+}
+
+export function SetValueDelete(arg1) {
+  return window['go']['main']['App']['SetValueDelete'](arg1);
+}
+
 export function UpdateKeyValue(arg1) {
   return window['go']['main']['App']['UpdateKeyValue'](arg1);
+}
+
+export function ZSetValueCreate(arg1) {
+  return window['go']['main']['App']['ZSetValueCreate'](arg1);
+}
+
+export function ZSetValueDelete(arg1) {
+  return window['go']['main']['App']['ZSetValueDelete'](arg1);
 }

@@ -21,9 +21,6 @@
                 <el-form-item label="值">
                     <el-input type="textarea" v-model="form.value" :autosize="{ minRows: 6 }" placeholder=""/>
                 </el-form-item>
-                <el-form-item>
-                    <el-button type="primary" @click="updateKey">更新</el-button>
-                </el-form-item>
             </div>
             <div v-if="form.type === 'list'">
                 <el-form-item>
@@ -44,13 +41,9 @@
                     </el-form-item>
                 </el-form>
                 </el-dialog>
-                <el-table :data="form.value" stripe border style="width: 100%; margin-bottom: 20px;">
+                <el-table :data="form.value" stripe border style="width: 100%;">
                     <el-table-column type="index" />
-                    <el-table-column label="Value" >
-                        <template #default="scope">
-                            <div @dblclick="">{{ scope.row }}</div>
-                            <!-- <el-input v-model="scope.row.value" /> -->
-                        </template>
+                    <el-table-column label="Value" prop="value">
                     </el-table-column>
                     <el-table-column label="操作">
                         <template #default="scope">
@@ -62,9 +55,6 @@
                         </template>
                 </el-table-column>
                 </el-table>
-                <el-form-item>
-                    <el-button type="primary" @click="updateKey">更新</el-button>
-                </el-form-item>
             </div>
             <div v-else-if="form.type === 'hash'">
                 <el-form-item>
@@ -104,22 +94,79 @@
                     </el-table-column>
                 </el-table>
             </div>
-            <div v-if="form.type === 'set'">
-                <el-form-item label="值">
-                    <el-input type="textarea" v-model="form.value" :rows="10" placeholder=""/>
-                </el-form-item>
+            <div v-else-if="form.type === 'set'">
                 <el-form-item>
-                    <el-button type="primary" @click="updateKey">更新</el-button>
+                    <el-button type="primary" @click="setDialogVisible = true">新增一行</el-button>
                 </el-form-item>
+                <el-dialog
+                    v-model="setDialogVisible"
+                    title="SET 值新增"
+                    width="60%"
+                >
+                    <el-form :model="setForm" label-width="100px">
+                        <el-form-item label="字段的值">
+                            <el-input type="textarea" :rows="6" placeholder="请输入字段的值" v-model="setForm.value" />
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="createSetValue">创建</el-button>
+                            <el-button @click="setDialogVisible = false">取消</el-button>
+                        </el-form-item>
+                    </el-form>
+                </el-dialog>
+                <el-table :data="form.value" border style="width: 100%">
+                    <el-table-column type="index" />
+                    <el-table-column prop="value" label="Value" />
+                    <el-table-column label="操作">
+                        <template #default="scope">
+                        <el-popconfirm title="确认删除?"  @confirm="deleteSetItem(scope.row.value)">
+                            <template #reference>
+                            <el-button link type="danger">删除</el-button>
+                            </template>
+                        </el-popconfirm>
+                        </template>
+                    </el-table-column>
+                </el-table>
             </div>
-            <div v-if="form.type === 'zset'">
-                <el-form-item label="值">
-                    <el-input type="textarea" v-model="form.value" :rows="10" placeholder=""/>
-                </el-form-item>
+            <div v-else-if="form.type === 'zset'">
                 <el-form-item>
-                    <el-button type="primary" @click="updateKey">更新</el-button>
+                    <el-button type="primary" @click="zsetDialogVisible = true">新增一行</el-button>
                 </el-form-item>
+                <el-dialog
+                    v-model="zsetDialogVisible"
+                    title="ZSET 值新增"
+                    width="60%"
+                >
+                    <el-form :model="zsetForm" label-width="100px">
+                        <el-form-item label="字段的分值">
+                            <el-input type="number" placeholder="请输入字段的分值" v-model="zsetForm.score" />
+                        </el-form-item>
+                        <el-form-item label="字段的值">
+                            <el-input type="textarea" :rows="6" placeholder="请输入字段的值" v-model="zsetForm.member" />
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="createZSetValue">创建</el-button>
+                            <el-button @click="zsetDialogVisible = false">取消</el-button>
+                        </el-form-item>
+                    </el-form>
+                </el-dialog>
+                <el-table :data="form.value" border style="width: 100%">
+                    <el-table-column type="index" />
+                    <el-table-column prop="Score" label="Score" />
+                    <el-table-column prop="Member" label="Member" />
+                    <el-table-column label="操作">
+                        <template #default="scope">
+                            <el-popconfirm title="确认删除?"  @confirm="deleteZSetMember(scope.row.Member)">
+                                <template #reference>
+                                <el-button link type="danger">删除</el-button>
+                                </template>
+                            </el-popconfirm>
+                        </template>
+                    </el-table-column>
+                </el-table>
             </div>
+            <el-form-item style="margin-top: 20px;">
+                <el-button type="primary" @click="updateKey">更新</el-button>
+            </el-form-item>
         </el-form>
     </main>
 </template>
@@ -127,7 +174,18 @@
 
 <script setup>
 import { ref, watch } from 'vue';
-import { GetKeyValue, UpdateKeyValue, ListValueCreate, ListValueDelete } from '../../wailsjs/go/main/App';
+import { 
+    GetKeyValue, 
+    UpdateKeyValue, 
+    ListValueCreate, 
+    ListValueDelete, 
+    HashAddOrUpdateField, 
+    HashFieldDelete, 
+    SetValueCreate, 
+    SetValueDelete,
+    ZSetValueCreate,
+    ZSetValueDelete,
+} from '../../wailsjs/go/main/App';
 import { ElNotification } from 'element-plus'
 
 let props = defineProps(['keyDB', 'keyIdentity', 'keyKey'])
@@ -135,10 +193,16 @@ let form = ref({})
 
 let listDialogVisible = ref(false)
 let listForm = ref({})
-let listItemChange = ref()
 
 let hashDialogVisible = ref(false)
 let hashDialogTitle = ref()
+let hashForm = ref({})
+
+let setDialogVisible = ref(false)
+let setForm = ref({})
+
+let zsetDialogVisible = ref(false)
+let zsetForm = ref({})
 
 watch(()=>props.keyKey, () => {
     getTheValue()
@@ -167,14 +231,19 @@ function updateKey() {
         value: form.value.value, 
         type: form.value.type,
         ttl: form.value.ttl}).then(res => {
+        console.log(res)
         if (res.code !== 200) {
-            form.value = undefined
             ElNotification({
                 title: res.msg,
                 type: "error"
             })
             return
         }
+        ElNotification({
+            title:res.msg,
+            type: "success",
+        })
+        getTheValue()
     })
 }
 
@@ -212,6 +281,157 @@ function deleteListItem(value) {
             })
             return
         }
+        getTheValue()
+    })
+}
+
+function showHashChangeDialog(type, hash) {
+    hashDialogVisible.value = true
+    if (type === "add") {
+        hashDialogTitle.value = "HASH 字段新增"
+        hashForm.value = {}
+    } else {
+        hashDialogTitle.value = "HASH 字段更新"
+        hashForm.value = {
+            field: hash.key,
+            value: hash.value
+        }
+    }
+}
+
+function hashFiledChange() {
+    HashAddOrUpdateField({
+        conn_identity: props.keyIdentity, 
+        db: props.keyDB, 
+        key: props.keyKey, 
+        field: hashForm.value.field, 
+        value: hashForm.value.value}).then(res => {
+        hashDialogVisible.value = false
+        if (res.code !== 200) {
+            ElNotification({
+                title:res.msg,
+                type: "error",
+            })
+            return
+        }
+        ElNotification({
+            title:res.msg,
+            type: "success",
+        })
+        getTheValue()
+    })
+}
+
+function deleteHashField(fields) {
+    HashFieldDelete({
+        conn_identity: props.keyIdentity, 
+        db: props.keyDB, 
+        key: props.keyKey, 
+        field:fields}).then(res => {
+        if (res.code !== 200) {
+            ElNotification({
+                title:res.msg,
+                type: "error",
+            })
+            return
+        }
+        ElNotification({
+            title:res.msg,
+            type: "success",
+        })
+        getTheValue()
+    })
+}
+
+function createSetValue() {
+    SetValueCreate({
+        conn_identity: props.keyIdentity,
+        db: props.keyDB,
+        key: props.keyKey,
+        value: setForm.value.value
+    }).then(res => {
+        if (res.code !== 200) {
+            ElNotification({
+                title:res.msg,
+                type: "error",
+            })
+            return
+        }
+        ElNotification({
+            title:res.msg,
+            type: "success",
+        })
+        getTheValue()
+        setDialogVisible.value = false
+        setForm.value = {}
+    })
+}
+
+function deleteSetItem(value) {
+    SetValueDelete({
+        conn_identity: props.keyIdentity,
+        db: props.keyDB,
+        key: props.keyKey,
+        value: value
+    }).then(res => {
+        if (res.code !== 200) {
+            ElNotification({
+                title:res.msg,
+                type: "error",
+            })
+            return
+        }
+        ElNotification({
+            title:res.msg,
+            type: "success",
+        })
+        getTheValue()
+    })
+}
+
+function createZSetValue() {
+    ZSetValueCreate({
+        conn_identity: props.keyIdentity,
+        db: props.keyDB,
+        key: props.keyKey,
+        score: +(zsetForm.value.score),
+        member: zsetForm.value.member
+    }).then(res => {
+        if (res.code !== 200) {
+            ElNotification({
+                title:res.msg,
+                type: "error",
+            })
+            return
+        }
+        ElNotification({
+            title:res.msg,
+            type: "success",
+        })
+        getTheValue()
+        zsetDialogVisible.value = false
+        zsetForm.value = {}
+    })
+}
+
+function deleteZSetMember(member) {
+    ZSetValueDelete({
+        conn_identity: props.keyIdentity,
+        db: props.keyDB,
+        key: props.keyKey,
+        member: member
+    }).then(res => {
+        if (res.code !== 200) {
+            ElNotification({
+                title:res.msg,
+                type: "error",
+            })
+            return
+        }
+        ElNotification({
+            title:res.msg,
+            type: "success",
+        })
         getTheValue()
     })
 }

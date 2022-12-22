@@ -25,7 +25,8 @@ func TestRedisCreate(t *testing.T) {
 		Addr: "127.0.0.1:6379",
 		DB:   0,
 	})
-	err := rdb.SetEx(context.Background(), "test", "test", time.Duration(100)*time.Second).Err()
+	err := rdb.Set(context.Background(), "test", "test", 0).Err()
+
 	t.Logf("err: %s", err)
 }
 

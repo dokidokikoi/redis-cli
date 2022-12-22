@@ -19,10 +19,22 @@ export function DeleteKeyValue(arg1:define.KeyValueRequest):Promise<main.H>;
 
 export function GetKeyValue(arg1:define.KeyValueRequest):Promise<main.H>;
 
+export function HashAddOrUpdateField(arg1:define.HashAddOrUpdateFieldRequest):Promise<main.H>;
+
+export function HashFieldDelete(arg1:define.HashFieldDeleteRequest):Promise<main.H>;
+
 export function KeyList(arg1:define.KeyListRequest):Promise<main.H>;
 
 export function ListValueCreate(arg1:define.ListValueRequest):Promise<main.H>;
 
 export function ListValueDelete(arg1:define.ListValueRequest):Promise<main.H>;
 
+export function SetValueCreate(arg1:define.SetValueRequest):Promise<main.H>;
+
+export function SetValueDelete(arg1:define.SetValueRequest):Promise<main.H>;
+
 export function UpdateKeyValue(arg1:define.UpdateKeyValueRequest):Promise<main.H>;
+
+export function ZSetValueCreate(arg1:define.ZSetValueRequest):Promise<main.H>;
+
+export function ZSetValueDelete(arg1:define.ZSetValueRequest):Promise<main.H>;
